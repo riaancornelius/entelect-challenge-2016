@@ -1,0 +1,5 @@
+/target
+/.idea
+/Game Engine/Replays/*.*
+*.iml
+move.txt
