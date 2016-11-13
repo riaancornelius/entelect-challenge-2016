@@ -25,9 +25,9 @@ public class GameBlock {
     @JsonProperty("Entity")
     private Entity entity;
     @JsonProperty("Bomb")
-    private Object bomb;
+    private Bomb bomb;
     @JsonProperty("PowerUp")
-    private Object powerUp;
+    private Entity powerUp;
     @JsonProperty("Exploding")
     private Boolean exploding;
     @JsonProperty("Location")
@@ -61,7 +61,7 @@ public class GameBlock {
      *     The bomb
      */
     @JsonProperty("Bomb")
-    public Object getBomb() {
+    public Bomb getBomb() {
         return bomb;
     }
 
@@ -71,7 +71,7 @@ public class GameBlock {
      *     The Bomb
      */
     @JsonProperty("Bomb")
-    public void setBomb(Object bomb) {
+    public void setBomb(Bomb bomb) {
         this.bomb = bomb;
     }
 
@@ -81,7 +81,7 @@ public class GameBlock {
      *     The powerUp
      */
     @JsonProperty("PowerUp")
-    public Object getPowerUp() {
+    public Entity getPowerUp() {
         return powerUp;
     }
 
@@ -91,7 +91,7 @@ public class GameBlock {
      *     The PowerUp
      */
     @JsonProperty("PowerUp")
-    public void setPowerUp(Object powerUp) {
+    public void setPowerUp(Entity powerUp) {
         this.powerUp = powerUp;
     }
 

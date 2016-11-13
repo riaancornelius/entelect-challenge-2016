@@ -3,13 +3,17 @@ package com.riaancornelius.bot.data;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.riaancornelius.bot.pathfinding.Mover;
 import com.riaancornelius.bot.pathfinding.TileBasedMap;
+import com.riaancornelius.bot.state.Bomb;
 import com.riaancornelius.bot.state.GameBlock;
+import com.riaancornelius.bot.state.Location;
 import com.riaancornelius.bot.state.State;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -18,14 +22,21 @@ import java.util.List;
 public class Map implements TileBasedMap {
 
     private String botDir;
+    private String botRepresentation;
 
     private int width = -1;
     private int height = -1;
 
     private MapEntity[][] mapData;
+    /** Indicator if a given tile has been visited during the search */
+    private boolean[][] visited;
 
-    public Map(String botDir) {
+    private java.util.Map<String, Location> players = new HashMap<>();
+    private List<Bomb> bombs = new ArrayList<>();
+
+    public Map(String botDir, String botRepresentation) {
         this.botDir = botDir;
+        this.botRepresentation = botRepresentation;
 
         try {
             loadGameState();
@@ -47,14 +58,27 @@ public class Map implements TileBasedMap {
         height = state.getMapHeight();
         width = state.getMapWidth();
 
+        visited = new boolean[width][height];
+
         mapData = new MapEntity[height][width];
         for (int i = 0; i < state.getGameBlocks().size(); i++) {
             List<GameBlock> gameBlocks = state.getGameBlocks().get(i);
             for (int j = 0; j < gameBlocks.size(); j++) {
                 GameBlock gameBlock = gameBlocks.get(j);
-                System.out.println("Reading pos["+i+"]["+j+"]");
-                MapEntity entity = gameBlock.getEntity() == null ?
-                        MapEntity.OPEN : MapEntity.parse(gameBlock.getEntity().get$type());
+                System.out.print("Reading pos["+(i+1)+"]["+(j+1)+"]: ");
+                MapEntity entity = MapEntity.parse(gameBlock);
+                System.out.print(entity.name() + " ");
+                if (entity==MapEntity.PLAYER) {
+                    String key = (String) gameBlock.getEntity().getAdditionalProperties().get("Key");
+                    System.out.print(key + " ");
+                    if (key.equals(botRepresentation)) {
+                        System.out.print("** ");
+                    }
+                    players.put(key, gameBlock.getLocation());
+                } else if (entity==MapEntity.BOMB){
+                    bombs.add(gameBlock.getBomb());
+                }
+                System.out.println("");
                 mapData[gameBlock.getLocation().getX()-1][gameBlock.getLocation().getY()-1] = entity;
             }
         }
@@ -70,7 +94,7 @@ public class Map implements TileBasedMap {
     }
 
     public void pathFinderVisited(int x, int y) {
-
+        visited[x][y] = true;
     }
 
     public boolean blocked(Mover mover, int x, int y) {
@@ -82,4 +106,17 @@ public class Map implements TileBasedMap {
     public float getCost(Mover mover, int sx, int sy, int tx, int ty) {
         return 1;
     }
+
+    /**
+     * Clear the array marking which tiles have been visted by the path
+     * finder.
+     */
+    public void clearVisited() {
+        for (int x=0;x<getWidthInTiles();x++) {
+            for (int y=0;y<getHeightInTiles();y++) {
+                visited[x][y] = false;
+            }
+        }
+    }
+
 }
