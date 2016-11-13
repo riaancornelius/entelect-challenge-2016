@@ -1,13 +1,14 @@
 package com.riaancornelius.bot.data;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.riaancornelius.bot.pathfinding.Mover;
 import com.riaancornelius.bot.pathfinding.TileBasedMap;
+import com.riaancornelius.bot.state.GameBlock;
+import com.riaancornelius.bot.state.State;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
@@ -21,39 +22,43 @@ public class Map implements TileBasedMap {
     private int width = -1;
     private int height = -1;
 
-    private char[][] mapData;
+    private MapEntity[][] mapData;
 
     public Map(String botDir) {
         this.botDir = botDir;
 
-        loadGameMap();
-    }
-
-    private void loadGameMap() {
-        Path path = Paths.get(botDir + File.separator + "state.json");
         try {
-            List<String> lines = Files.readAllLines(path, Charset.defaultCharset());
-            String[] mapMeta = lines.get(0).split(",");
-            for (String meta : mapMeta) {
-                String[] split = meta.split(":");
-                if (split[0].equalsIgnoreCase("MapHeight")) {
-                    height = Integer.parseInt(split[1].trim());
-                } else if (split[0].equalsIgnoreCase("MapWidth")) {
-                    width = Integer.parseInt(split[1].trim());
-                }
-            }
-            mapData = new char[height][width];
-            for (int i = 0; i < height; i++) {
-                String line = lines.get(i);
-                System.out.println(line);
-                char[] chars = line.toCharArray();
-                for (int j = 0; j < chars.length; j++) {
-                    mapData[i][j] = chars[j];
-                }
-            }
+            loadGameState();
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void loadGameState() throws IOException {
+        //read json file data to String
+        byte[] jsonData = Files.readAllBytes(Paths.get(botDir + File.separator + "state.json"));
+
+        //create ObjectMapper instance
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        //convert json string to object
+        State state = objectMapper.readValue(jsonData, State.class);
+
+        height = state.getMapHeight();
+        width = state.getMapWidth();
+
+        mapData = new MapEntity[height][width];
+        for (int i = 0; i < state.getGameBlocks().size(); i++) {
+            List<GameBlock> gameBlocks = state.getGameBlocks().get(i);
+            for (int j = 0; j < gameBlocks.size(); j++) {
+                GameBlock gameBlock = gameBlocks.get(j);
+                System.out.println("Reading pos["+i+"]["+j+"]");
+                MapEntity entity = gameBlock.getEntity() == null ?
+                        MapEntity.OPEN : MapEntity.parse(gameBlock.getEntity().get$type());
+                mapData[gameBlock.getLocation().getX()-1][gameBlock.getLocation().getY()-1] = entity;
+            }
+        }
+        System.out.println("Done");
     }
 
     public int getWidthInTiles() {
@@ -69,7 +74,9 @@ public class Map implements TileBasedMap {
     }
 
     public boolean blocked(Mover mover, int x, int y) {
-        return false;
+        return mapData[x][y] == MapEntity.INDESTRUCTIBLE_WALL
+                || mapData[x][y] == MapEntity.PLAYER
+                || mapData[x][y] == MapEntity.WALL;
     }
 
     public float getCost(Mover mover, int sx, int sy, int tx, int ty) {

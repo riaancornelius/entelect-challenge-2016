@@ -1,5 +1,9 @@
 package com.riaancornelius.bot.data;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+
 /**
  * @author Riaan
  */
@@ -11,9 +15,6 @@ public enum Move {
     PLANT(5),   // Plant Bomb - Plants a bomb (If there are bombs in your bomb bag).
     TRIGGER(6); // Trigger Bomb - Takes the bomb with the lowest count down and sets the countdown to 1.
 
-    /**
-     * @author Riaan
-     */
     private int representation;
 
     Move(int representation) {
@@ -22,5 +23,18 @@ public enum Move {
 
     public int getRepresentation() {
         return representation;
+    }
+
+    public void saveToFile(String botDir) {
+        File move = new File(botDir + File.separator + "move.txt");
+        try {
+            if (move.createNewFile()) {
+                FileWriter write = new FileWriter(move);
+                write.write(String.valueOf(this.getRepresentation()));
+                write.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -11,34 +11,10 @@ import java.util.Random;
  */
 public class Main {
 
-    private static String botDir;
-
     public static void main(String... args){
-
         String botKey = args[0];
-        botDir = args[1].replace("\"","");
+        String botDir = args[1].replace("\"","");
 
-        Bot bot = new Bot(botKey, botDir);
-
-        Move nextMove = calculateMove();
-
-        saveMoveFile(nextMove);
-    }
-
-    private static void saveMoveFile(Move nextMove) {
-        File move = new File(botDir + File.separator + "move.txt");
-        try {
-            if (move.createNewFile()) {
-                FileWriter write = new FileWriter(move);
-                write.write(String.valueOf(nextMove.getRepresentation()));
-                write.close();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static Move calculateMove() {
-        return Move.values()[new Random().nextInt(7)];
+        new Bot(botKey, botDir);
     }
 }
