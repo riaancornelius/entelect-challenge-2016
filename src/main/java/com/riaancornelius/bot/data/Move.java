@@ -1,5 +1,8 @@
 package com.riaancornelius.bot.data;
 
+import com.riaancornelius.bot.pathfinding.Path;
+import com.riaancornelius.bot.state.Location;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -23,6 +26,19 @@ public enum Move {
 
     public int getRepresentation() {
         return representation;
+    }
+
+    public static Move from(Path.Step step, Location current) {
+        if (step.getY() < current.getY()-1) {
+            return Move.DOWN;
+        } else if (step.getY() > current.getY()-1) {
+            return Move.UP;
+        } else if (step.getX() > current.getX()-1) {
+            return Move.RIGHT;
+        } else if (step.getX() < current.getX()-1) {
+            return Move.LEFT;
+        }
+        return null;
     }
 
     public void saveToFile(String botDir) {

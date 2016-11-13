@@ -7,20 +7,22 @@ import com.riaancornelius.bot.state.GameBlock;
  * @author Riaan
  */
 public enum MapEntity {
-    INDESTRUCTIBLE_WALL("Domain.Entities.IndestructibleWallEntity, Domain"),
-    WALL("Domain.Entities.DestructibleWallEntity, Domain"),
-    PLAYER("Domain.Entities.PlayerEntity, Domain"),
-    EXPLOSION(""),
-    BOMB(""), //Bomb":{"Owner":{"Name":"Jamie wants big boom","Key":"A","Points":0,"Killed":false,"BombBag":1,"BombRadius":1,"Location":{"X":3,"Y":2}},"BombRadius":1,"BombTimer":4,"IsExploding":false,"Location":{"X":3,"Y":2}},"PowerUp":null,"Exploding":false,"Location":{"X":3,"Y":2}}
-    POWERUP_SUPER("Domain.Entities.PowerUps.SuperPowerUp, Domain"),
-    POWERUP_BOMB_RADIUS("Domain.Entities.PowerUps.BombRaduisPowerUpEntity, Domain"),
-    POWERUP_BOMB_BAG("Domain.Entities.PowerUps.BombBagPowerUpEntity, Domain"),
-    OPEN("");
+    INDESTRUCTIBLE_WALL("Domain.Entities.IndestructibleWallEntity, Domain", 1000),
+    WALL("Domain.Entities.DestructibleWallEntity, Domain", 100),
+    PLAYER("Domain.Entities.PlayerEntity, Domain", 50),
+    EXPLOSION("", 20),
+    BOMB("", 1000), //Bomb":{"Owner":{"Name":"Jamie wants big boom","Key":"A","Points":0,"Killed":false,"BombBag":1,"BombRadius":1,"Location":{"X":3,"Y":2}},"BombRadius":1,"BombTimer":4,"IsExploding":false,"Location":{"X":3,"Y":2}},"PowerUp":null,"Exploding":false,"Location":{"X":3,"Y":2}}
+    POWERUP_SUPER("Domain.Entities.PowerUps.SuperPowerUp, Domain", 1),
+    POWERUP_BOMB_RADIUS("Domain.Entities.PowerUps.BombRaduisPowerUpEntity, Domain", 1),
+    POWERUP_BOMB_BAG("Domain.Entities.PowerUps.BombBagPowerUpEntity, Domain", 1),
+    OPEN("", 5);
 
     String domainString;
+    private int cost;
 
-    MapEntity(String domainString) {
+    MapEntity(String domainString, int cost) {
         this.domainString = domainString;
+        this.cost = cost;
     }
 
     public static MapEntity parse(GameBlock data){
@@ -54,5 +56,9 @@ public enum MapEntity {
             System.out.println(domainString);
             throw new RuntimeException("Unexpected domain object found: " + domainString);
         }
+    }
+
+    public int getCost() {
+        return cost;
     }
 }

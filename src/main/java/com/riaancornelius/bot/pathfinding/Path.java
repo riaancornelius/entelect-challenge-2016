@@ -1,6 +1,9 @@
 package com.riaancornelius.bot.pathfinding;
 
+import java.sql.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 
 /**
  * A path determined by some path finding algorithm. A series of steps from
@@ -150,5 +153,15 @@ public class Path {
 			
 			return false;
 		}
+
+		@Override
+		public String toString() {
+			return "Step{" + "x=" + x + ", y=" + y + '}';
+		}
+	}
+
+	@Override
+	public String toString() {
+		return Arrays.deepToString(steps.toArray());
 	}
 }
