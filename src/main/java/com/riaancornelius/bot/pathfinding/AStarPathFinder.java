@@ -161,10 +161,10 @@ public class AStarPathFinder implements PathFinder {
 		Path path = new Path();
 		Node target = nodes[tx][ty];
 		while (target != nodes[sx][sy]) {
-			path.prependStep(target.x, target.y);
+			path.prependStep(target.x, target.y, (int) target.cost);
 			target = target.parent;
 		}
-		path.prependStep(sx,sy);
+		path.prependStep(sx,sy, 0);
 		
 		// thats it, we have our path 
 		return path;

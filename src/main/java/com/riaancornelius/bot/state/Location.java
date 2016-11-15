@@ -26,6 +26,14 @@ public class Location {
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
+    public Location() {
+    }
+
+    public Location(Integer x, Integer y) {
+        this.x = x;
+        this.y = y;
+    }
+
     /**
      * 
      * @return

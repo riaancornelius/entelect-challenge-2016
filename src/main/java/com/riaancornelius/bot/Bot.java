@@ -9,6 +9,7 @@ import com.riaancornelius.bot.pathfinding.Path;
 import com.riaancornelius.bot.pathfinding.PathFinder;
 import com.riaancornelius.bot.state.Location;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 /**
@@ -35,13 +36,19 @@ public class Bot implements Mover {
     private Move calculateMove(Map map) {
         finder = new AStarPathFinder(map, 500, false);
 
-        Location targetEnemy = map.findClosestPlayerTo(botKey);
+        Location playerPosition = map.getPlayerPosition(botKey);
+        int currentX = playerPosition.getX()-1;
+        int currentY = playerPosition.getY()-1;
 
-        path = finder.findPath(this,
-                map.getPlayerPosition(botKey).getX()-1,
-                map.getPlayerPosition(botKey).getY()-1,
-                targetEnemy.getX()-1,
-                targetEnemy.getY()-1);
+        System.out.println("Player is at " + currentX + "," + currentY);
+
+        Location nextTarget = map.findClosestPlayerTo(botKey);
+        if (map.getLocation(currentX, currentY) == MapEntity.EXPLOSION) {
+            System.out.println("Position is unsafe - finding safe location");
+            path = findSafeLocation(playerPosition, map, finder);
+        } else {
+            path = finder.findPath(this, currentX, currentY, nextTarget.getX() - 1, nextTarget.getY() - 1);
+        }
         if (path == null) {
             System.out.println("No path found");
         } else {
@@ -49,10 +56,11 @@ public class Bot implements Mover {
             MapEntity entityAtNextStep = map.getLocation(nextStep.getX(), nextStep.getY());
             System.out.println(nextStep + "Moving onto: " + entityAtNextStep);
             if (entityAtNextStep == MapEntity.WALL) {
+                System.out.println("Planting bomb");
                 return Move.PLANT;
             }
 
-            Move move = Move.from(nextStep, map.getPlayerPosition("C"));
+            Move move = Move.from(nextStep, map.getPlayerPosition(botKey));
             System.out.println("Path with " + path.getLength() + " starts at " + nextStep);
             System.out.println("Moving: " + move.name());
             return move;
@@ -60,4 +68,34 @@ public class Bot implements Mover {
 
         return Move.values()[new Random().nextInt(5)];
     }
+
+    private Path findSafeLocation(Location player, Map map, PathFinder finder) {
+        int minCost = Integer.MAX_VALUE;
+        Path path = null;
+        for (int i = (player.getX() - 5); i < player.getX() + 5; i++) {
+            if (i <= 0
+                    || i >= map.getWidthInTiles()) {
+                continue;
+            }
+            for (int j = player.getY() - 5; j < player.getY() + 5; j++) {
+                if (j <= 0
+                        || j >= map.getHeightInTiles()) {
+                    continue;
+                }
+
+                MapEntity mapEntity = map.getLocation(i, j);
+
+                if (mapEntity == MapEntity.OPEN) {
+                    Path tmpPath = finder.findPath(this, player.getX() - 1, player.getY() - 1, i, j);
+                    int cost = tmpPath.getCost();
+                    if (cost < minCost) {
+                        minCost = cost;
+                        path = tmpPath;
+                    }
+                }
+            }
+        }
+        return path;
+    }
+
 }

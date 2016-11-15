@@ -75,6 +75,9 @@ public class Map implements TileBasedMap {
                         //System.out.print("** ");
                     }
                     players.put(key, gameBlock.getLocation());
+                    if (gameBlock.getBomb()!=null) {
+                        bombs.add(gameBlock.getBomb());
+                    }
                 } else if (entity==MapEntity.BOMB){
                     bombs.add(gameBlock.getBomb());
                 }
@@ -82,7 +85,34 @@ public class Map implements TileBasedMap {
                 mapData[gameBlock.getLocation().getX()-1][gameBlock.getLocation().getY()-1] = entity;
             }
         }
+        processBombs();
         System.out.println("Map loaded");
+    }
+
+    // Converts bombs into explosions - This treats all bombs on the map as exploding. 
+    // Simplifies some logic at the expense of efficiency. 
+    private void processBombs() {
+        for (Bomb bomb : bombs) {
+            int x = bomb.getLocation().getX()-1;
+            int y = bomb.getLocation().getY()-1;
+            System.out.println("Found bomb at " + x + "," + y);
+            mapData[x][y] = MapEntity.EXPLOSION;
+            for (Integer i = 1; i <= bomb.getBombRadius(); i++) {
+                if (x+i < getWidthInTiles() && mapData[x+i][y] == MapEntity.OPEN) {
+                    System.out.println();
+                    mapData[x+i][y] = MapEntity.EXPLOSION;
+                }
+                if (x-i > 0 && mapData[x-i][y] == MapEntity.OPEN) {
+                    mapData[x-i][y] = MapEntity.EXPLOSION;
+                }
+                if (y+i < getHeightInTiles() && mapData[x][y+i] == MapEntity.OPEN) {
+                    mapData[x][y+i] = MapEntity.EXPLOSION;
+                }
+                if (y-1 > 0 && mapData[x][y-i] == MapEntity.OPEN) {
+                    mapData[x][y-i] = MapEntity.EXPLOSION;
+                }
+            }
+        }
     }
 
     public int getWidthInTiles() {
@@ -101,7 +131,7 @@ public class Map implements TileBasedMap {
         return mapData[x][y] == MapEntity.INDESTRUCTIBLE_WALL
                 //|| mapData[x][y] == MapEntity.PLAYER
                 //|| mapData[x][y] == MapEntity.WALL
-                || mapData[x][y] == MapEntity.EXPLOSION
+                //|| mapData[x][y] == MapEntity.EXPLOSION
                 || mapData[x][y] == MapEntity.BOMB;
     }
 

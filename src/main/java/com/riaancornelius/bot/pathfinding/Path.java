@@ -1,9 +1,7 @@
 package com.riaancornelius.bot.pathfinding;
 
-import java.sql.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 
 /**
  * A path determined by some path finding algorithm. A series of steps from
@@ -14,7 +12,7 @@ import java.util.Collections;
  */
 public class Path {
 	/** The list of steps building up this path */
-	private ArrayList steps = new ArrayList();
+	private ArrayList<Step> steps = new ArrayList<>();
 	
 	/**
 	 * Create an empty path
@@ -31,7 +29,15 @@ public class Path {
 	public int getLength() {
 		return steps.size();
 	}
-	
+
+	public int getCost() {
+		int totalCost = 0;
+		for (Step step : steps) {
+			totalCost += step.cost;
+		}
+		return totalCost;
+	}
+
 	/**
 	 * Get the step at a given index in the path
 	 * 
@@ -69,8 +75,8 @@ public class Path {
 	 * @param x The x coordinate of the new step
 	 * @param y The y coordinate of the new step
 	 */
-	public void appendStep(int x, int y) {
-		steps.add(new Step(x,y));
+	public void appendStep(int x, int y, int cost) {
+		steps.add(new Step(x,y, cost));
 	}
 
 	/**
@@ -79,8 +85,8 @@ public class Path {
 	 * @param x The x coordinate of the new step
 	 * @param y The y coordinate of the new step
 	 */
-	public void prependStep(int x, int y) {
-		steps.add(0, new Step(x, y));
+	public void prependStep(int x, int y, int cost) {
+		steps.add(0, new Step(x, y, cost));
 	}
 	
 	/**
@@ -104,18 +110,25 @@ public class Path {
 		private int x;
 		/** The y coordinate at the given step */
 		private int y;
-		
+		private int cost;
+
 		/**
 		 * Create a new step
-		 * 
-		 * @param x The x coordinate of the new step
+		 *  @param x The x coordinate of the new step
 		 * @param y The y coordinate of the new step
+		 * @param cost
 		 */
+		public Step(int x, int y, int cost) {
+			this.x = x;
+			this.y = y;
+			this.cost = cost;
+		}
+
 		public Step(int x, int y) {
 			this.x = x;
 			this.y = y;
 		}
-		
+
 		/**
 		 * Get the x coordinate of the new step
 		 * 

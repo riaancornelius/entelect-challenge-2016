@@ -11,12 +11,13 @@ import java.io.IOException;
  * @author Riaan
  */
 public enum Move {
-    LEFT(1),    // Move Left - Moves one block left.
-    RIGHT(2),   // Move Right - Moves one block right.
-    UP(3),      // Move Up - Moves one block up.
+    LEFT(2),    // Move Left - Moves one block left.
+    RIGHT(3),   // Move Right - Moves one block right.
+    UP(1),      // Move Up - Moves one block up.
     DOWN(4),    // Move Down - Moves one block down.
     PLANT(5),   // Plant Bomb - Plants a bomb (If there are bombs in your bomb bag).
-    TRIGGER(6); // Trigger Bomb - Takes the bomb with the lowest count down and sets the countdown to 1.
+    TRIGGER(6), // Trigger Bomb - Takes the bomb with the lowest count down and sets the countdown to 1.
+    DO_NOTHING(7);
 
     private int representation;
 
@@ -30,9 +31,9 @@ public enum Move {
 
     public static Move from(Path.Step step, Location current) {
         if (step.getY() < current.getY()-1) {
-            return Move.DOWN;
-        } else if (step.getY() > current.getY()-1) {
             return Move.UP;
+        } else if (step.getY() > current.getY()-1) {
+            return Move.DOWN;
         } else if (step.getX() > current.getX()-1) {
             return Move.RIGHT;
         } else if (step.getX() < current.getX()-1) {
