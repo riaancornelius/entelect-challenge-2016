@@ -98,21 +98,74 @@ public class Map implements TileBasedMap {
             System.out.println("Found bomb at " + x + "," + y);
             mapData[x][y] = MapEntity.EXPLOSION;
             for (Integer i = 1; i <= bomb.getBombRadius(); i++) {
-                if (x+i < getWidthInTiles() && mapData[x+i][y] == MapEntity.OPEN) {
-                    System.out.println();
-                    mapData[x+i][y] = MapEntity.EXPLOSION;
+                if (x + i < getWidthInTiles() &&
+                        (mapData[x + i][y] == MapEntity.OPEN || mapData[x + i][y] == MapEntity.PLAYER)) {
+                    //System.out.println("Changing to EXPLOSION: " + (x+i) + "," + (y));
+                    mapData[x + i][y] = MapEntity.EXPLOSION;
+                } else {
+                    break;
                 }
-                if (x-i > 0 && mapData[x-i][y] == MapEntity.OPEN) {
-                    mapData[x-i][y] = MapEntity.EXPLOSION;
+            }
+            for (Integer i = 1; i <= bomb.getBombRadius(); i++) {
+                if (x - i > 0 && (mapData[x - i][y] == MapEntity.OPEN || mapData[x - i][y] == MapEntity.PLAYER)) {
+                    mapData[x - i][y] = MapEntity.EXPLOSION;
+                } else {
+                    break;
                 }
-                if (y+i < getHeightInTiles() && mapData[x][y+i] == MapEntity.OPEN) {
-                    mapData[x][y+i] = MapEntity.EXPLOSION;
+            }
+            for (Integer i = 1; i <= bomb.getBombRadius(); i++) {
+                if (y + i < getHeightInTiles() &&
+                        (mapData[x][y + i] == MapEntity.OPEN || mapData[x][y + i] == MapEntity.PLAYER)) {
+                    mapData[x][y + i] = MapEntity.EXPLOSION;
+                } else {
+                    break;
                 }
-                if (y-1 > 0 && mapData[x][y-i] == MapEntity.OPEN) {
+            }
+            for (Integer i = 1; i <= bomb.getBombRadius(); i++) {
+                if (y-i > 0
+                        && (mapData[x][y-i] == MapEntity.OPEN || mapData[x][y-i] == MapEntity.PLAYER)) {
                     mapData[x][y-i] = MapEntity.EXPLOSION;
+                } else {
+                    break;
                 }
             }
         }
+    }
+
+    public boolean canSafelyPlantBomb(String botKey) {
+        return true;
+    }
+
+    public boolean isPlayerNextToWall(String botKey) {
+        int x = getPlayerPosition(botKey).getX()-1;
+        int y = getPlayerPosition(botKey).getY()-1;
+        return (mapData[x+1][y] == MapEntity.WALL
+                || mapData[x-1][y] == MapEntity.WALL
+                || mapData[x][y+1] == MapEntity.WALL
+                || mapData[x][y-1] == MapEntity.WALL);
+    }
+
+    public boolean isPowerUpInDirection(String botKey, Move direction) {
+        int x = getPlayerPosition(botKey).getX()-1;
+        int y = getPlayerPosition(botKey).getY()-1;
+        MapEntity entity = getMapLocationInDirection(x, y, direction);
+        return entity == MapEntity.POWERUP_SUPER
+                || entity == MapEntity.POWERUP_BOMB_BAG
+                || entity == MapEntity.POWERUP_BOMB_RADIUS;
+    }
+
+    public MapEntity getMapLocationInDirection(int x, int y, Move direction) {
+        switch (direction) {
+            case UP:
+                return mapData[x][y-1];
+            case DOWN:
+                return mapData[x][y+1];
+            case LEFT:
+                return mapData[x-1][y];
+            case RIGHT:
+                return mapData[x+1][y];
+        }
+        return MapEntity.OPEN;
     }
 
     public int getWidthInTiles() {
