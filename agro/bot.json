@@ -1,0 +1,8 @@
+{
+	"Author":"Riaan Cornelius",
+    "Email":"riaan.cornelius@entelect.co.za",
+    "NickName" :"Jamie wants big boom - agro",
+    "BotType": "Java",
+    "ProjectLocation" : "",
+    "RunFile" : "target\\bot-1.0-SNAPSHOT-jar-with-dependencies.jar"
+}
