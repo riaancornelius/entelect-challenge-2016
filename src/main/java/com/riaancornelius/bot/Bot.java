@@ -53,7 +53,7 @@ public class Bot implements Mover {
         System.out.println(" on " + entityAtCurrent.name());
         if (entityAtCurrent == MapEntity.EXPLOSION) {
             System.out.println("Position is unsafe - finding safe location");
-            path = findSafeLocation(playerPosition, map, finder);
+            path = map.findSafeLocation(playerPosition, this, finder);
         } else {
             path = findClosestWall(playerPosition, map, finder);
             // Agro version goes after other bots:
@@ -83,7 +83,7 @@ public class Bot implements Mover {
                 return Move.RIGHT;
             } else if (entityAtCurrent != MapEntity.EXPLOSION
                     && (map.isPlayerNextToWall(botKey) || entityAtNextStep == MapEntity.PLAYER)
-                    && map.canSafelyPlantBomb(botKey)) {
+                    && map.playerHasBomb(botKey) && map.canSafelyPlantBomb(botKey, playerPosition, this, finder)) {
                 System.out.println("Overriding with " + Move.PLANT);
                 return Move.PLANT;
             }
@@ -95,35 +95,6 @@ public class Bot implements Mover {
         }
 
         return Move.values()[new Random().nextInt(5)];
-    }
-
-    private Path findSafeLocation(Location player, Map map, PathFinder finder) {
-        int minCost = Integer.MAX_VALUE;
-        Path path = null;
-        for (int i = (player.getX() - 5); i < player.getX() + 5; i++) {
-            if (i <= 0
-                    || i >= map.getWidthInTiles()) {
-                continue;
-            }
-            for (int j = player.getY() - 5; j < player.getY() + 5; j++) {
-                if (j <= 0
-                        || j >= map.getHeightInTiles()) {
-                    continue;
-                }
-
-                MapEntity mapEntity = map.getLocation(i, j);
-
-                if (mapEntity == MapEntity.OPEN) {
-                    Path tmpPath = finder.findPath(this, player.getX() - 1, player.getY() - 1, i, j);
-                    int cost = tmpPath.getCost();
-                    if (cost < minCost) {
-                        minCost = cost;
-                        path = tmpPath;
-                    }
-                }
-            }
-        }
-        return path;
     }
 
     private Path findClosestWall(Location player, Map map, PathFinder finder) {

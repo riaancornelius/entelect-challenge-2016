@@ -1,11 +1,15 @@
 package com.riaancornelius.bot.data;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.riaancornelius.bot.Bot;
 import com.riaancornelius.bot.pathfinding.Mover;
+import com.riaancornelius.bot.pathfinding.Path;
+import com.riaancornelius.bot.pathfinding.PathFinder;
 import com.riaancornelius.bot.pathfinding.TileBasedMap;
 import com.riaancornelius.bot.state.Bomb;
 import com.riaancornelius.bot.state.GameBlock;
 import com.riaancornelius.bot.state.Location;
+import com.riaancornelius.bot.state.RegisteredPlayerEntity;
 import com.riaancornelius.bot.state.State;
 
 import java.io.File;
@@ -13,6 +17,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -32,6 +37,7 @@ public class Map implements TileBasedMap {
     private boolean[][] visited;
 
     private java.util.Map<String, Location> players = new HashMap<>();
+    private java.util.Map<String, RegisteredPlayerEntity> playerData = new HashMap<>();
     private List<Bomb> bombs = new ArrayList<>();
 
     public Map(String botDir, String botRepresentation) {
@@ -54,6 +60,10 @@ public class Map implements TileBasedMap {
 
         //convert json string to object
         State state = objectMapper.readValue(jsonData, State.class);
+
+        for (RegisteredPlayerEntity player : state.getRegisteredPlayerEntities()) {
+            playerData.put(player.getKey(), player);
+        }
 
         height = state.getMapHeight();
         width = state.getMapWidth();
@@ -132,8 +142,67 @@ public class Map implements TileBasedMap {
         }
     }
 
-    public boolean canSafelyPlantBomb(String botKey) {
-        return true;
+    public boolean canSafelyPlantBomb(String botKey, Location location, Bot bot, PathFinder finder) {
+        System.out.println("Can safely plant bomb?");
+        Bomb bomb = new Bomb();
+        RegisteredPlayerEntity player = playerData.get(botKey);
+        bomb.setLocation(location);
+        bomb.setBombRadius(player.getBombRadius());
+        int bombTimer = player.getBombBag() * 3;
+        System.out.println("Bombtimer is currently " + bombTimer);
+        bomb.setBombTimer(bombTimer);
+        bomb.setOwner(player);
+        bombs.add(bomb);
+
+        MapEntity[][] backupData = copyMapData();
+        mapData[location.getX()-1][location.getY()-1] = MapEntity.BOMB;
+        processBombs();
+
+        Path safeLocation = findSafeLocation(location, bot, finder);
+        System.out.println("Found closest safe location with " + safeLocation.getLength() + " steps");
+
+        bombs.remove(bombs.size()-1);
+        mapData = backupData;
+
+        return safeLocation.getLength() <= bomb.getBombTimer();
+    }
+
+    public boolean playerHasBomb(String botKey) {
+        RegisteredPlayerEntity player = playerData.get(botKey);
+        int count = 0;
+        for (Bomb bomb : bombs) {
+            if (bomb.getOwner().getKey().equalsIgnoreCase(botKey)){
+                count++;
+            }
+        }
+        return count < player.getBombBag();
+    }
+
+    public Path findSafeLocation(Location player, Bot bot, PathFinder finder) {
+        int minCost = Integer.MAX_VALUE;
+        Path path = null;
+        for (int i = (player.getX() - 5); i < player.getX() + 5; i++) {
+            if (i <= 0 || i >= getWidthInTiles()) {
+                continue;
+            }
+            for (int j = player.getY() - 5; j < player.getY() + 5; j++) {
+                if (j <= 0 || j >= getHeightInTiles()) {
+                    continue;
+                }
+
+                MapEntity mapEntity = getLocation(i, j);
+
+                if (mapEntity == MapEntity.OPEN) {
+                    Path tmpPath = finder.findPath(bot, player.getX() - 1, player.getY() - 1, i, j);
+                    int cost = tmpPath.getCost();
+                    if (cost < minCost) {
+                        minCost = cost;
+                        path = tmpPath;
+                    }
+                }
+            }
+        }
+        return path;
     }
 
     public boolean isPlayerNextToWall(String botKey) {
@@ -202,6 +271,14 @@ public class Map implements TileBasedMap {
                 visited[x][y] = false;
             }
         }
+    }
+
+    public MapEntity[][] copyMapData(){
+        MapEntity[][] copy = new MapEntity[width][height];
+        for (int i = 0; i < mapData.length; i++) {
+            copy[i] = Arrays.copyOf(mapData[i], mapData[i].length);
+        }
+        return copy;
     }
 
     public Location getPlayerPosition(String botKey) {
