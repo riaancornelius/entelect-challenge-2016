@@ -34,7 +34,7 @@ public class MapTest {
 
         System.out.println("TEST >> Player is at " + currentX + "," + currentY);
 
-        Location nextTarget = map.findClosestPlayerTo(BOT_KEY);
+        Location nextTarget = map.findClosestPlayerTo(BOT_KEY, bot, finder);
         if (map.getLocation(currentX, currentY) == MapEntity.EXPLOSION) {
             System.out.println("TEST >> Position is unsafe - finding safe location");
             path = findSafeLocation(playerPosition, map, bot, finder);

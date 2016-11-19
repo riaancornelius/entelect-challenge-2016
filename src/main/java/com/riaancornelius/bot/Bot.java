@@ -55,10 +55,15 @@ public class Bot implements Mover {
             System.out.println("Position is unsafe - finding safe location");
             path = map.findSafeLocation(playerPosition, this, finder);
         } else {
-            path = findClosestWall(playerPosition, map, finder);
-            System.out.println("Closest wall found " + path.getLength() + " steps away");
+            Location botInRange = map.botInRange(botKey, 6);
+            if (botInRange != null) {
+                path = finder.findPath(this, currentX, currentY, botInRange.getX() - 1, botInRange.getY() - 1);
+            } else {
+                path = findClosestWall(playerPosition, map, finder);
+                System.out.println("Closest wall found " + path.getLength() + " steps away");
+            }
             // Agro version goes after other bots:
-            //Location nextTarget = map.findClosestPlayerTo(botKey);
+            //Location nextTarget = map.findClosestPlayerTo(botKey, this, finder);
             //path = finder.findPath(this, currentX, currentY, nextTarget.getX() - 1, nextTarget.getY() - 1);
         }
         if (path == null) {
@@ -67,7 +72,27 @@ public class Bot implements Mover {
             Path.Step nextStep = path.getStep(1);
             MapEntity entityAtNextStep = map.getLocation(nextStep.getX(), nextStep.getY());
             System.out.println(nextStep + "Moving onto: " + entityAtNextStep);
-            if (entityAtCurrent != MapEntity.EXPLOSION && entityAtNextStep == MapEntity.EXPLOSION) {
+            if (entityAtCurrent == MapEntity.EXPLOSION && entityAtNextStep == MapEntity.WALL) {
+                int x = playerPosition.getX() - 1;
+                int y = playerPosition.getY() - 1;
+                if (map.getMapLocationInDirection(x, y, Move.LEFT) != MapEntity.WALL
+                        && map.getMapLocationInDirection(x, y, Move.LEFT) != MapEntity.INDESTRUCTIBLE_WALL){
+                    System.out.println("Overriding with " + Move.LEFT);
+                    return Move.LEFT;
+                } else if (map.getMapLocationInDirection(x, y, Move.RIGHT) != MapEntity.WALL
+                        && map.getMapLocationInDirection(x, y, Move.RIGHT) != MapEntity.INDESTRUCTIBLE_WALL){
+                    System.out.println("Overriding with " + Move.RIGHT);
+                    return Move.RIGHT;
+                } else if (map.getMapLocationInDirection(x, y, Move.UP) != MapEntity.WALL
+                        && map.getMapLocationInDirection(x, y, Move.UP) != MapEntity.INDESTRUCTIBLE_WALL){
+                    System.out.println("Overriding with " + Move.UP);
+                    return Move.UP;
+                } else if (map.getMapLocationInDirection(x, y, Move.DOWN) != MapEntity.WALL
+                        && map.getMapLocationInDirection(x, y, Move.DOWN) != MapEntity.INDESTRUCTIBLE_WALL){
+                    System.out.println("Overriding with " + Move.DOWN);
+                    return Move.DOWN;
+                }
+            } else if (entityAtCurrent != MapEntity.EXPLOSION && entityAtNextStep == MapEntity.EXPLOSION) {
                 System.out.println("Overriding with " + Move.TRIGGER);
                 return Move.TRIGGER;
             } else if (entityAtCurrent != MapEntity.EXPLOSION && map.isPowerUpInDirection(botKey, Move.UP)){

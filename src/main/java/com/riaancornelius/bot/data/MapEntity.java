@@ -9,13 +9,13 @@ import com.riaancornelius.bot.state.GameBlock;
 public enum MapEntity {
     INDESTRUCTIBLE_WALL("Domain.Entities.IndestructibleWallEntity, Domain", 1000),
     WALL("Domain.Entities.DestructibleWallEntity, Domain", 100),
-    PLAYER("Domain.Entities.PlayerEntity, Domain", 300),
-    EXPLOSION("", 30),
-    BOMB("", 1000), //Bomb":{"Owner":{"Name":"Jamie wants big boom","Key":"A","Points":0,"Killed":false,"BombBag":1,"BombRadius":1,"Location":{"X":3,"Y":2}},"BombRadius":1,"BombTimer":4,"IsExploding":false,"Location":{"X":3,"Y":2}},"PowerUp":null,"Exploding":false,"Location":{"X":3,"Y":2}}
+    PLAYER("Domain.Entities.PlayerEntity, Domain", 500),
+    EXPLOSION("", 50),
+    BOMB("", 3000), //Bomb":{"Owner":{"Name":"Jamie wants big boom","Key":"A","Points":0,"Killed":false,"BombBag":1,"BombRadius":1,"Location":{"X":3,"Y":2}},"BombRadius":1,"BombTimer":4,"IsExploding":false,"Location":{"X":3,"Y":2}},"PowerUp":null,"Exploding":false,"Location":{"X":3,"Y":2}}
     POWERUP_SUPER("Domain.Entities.PowerUps.SuperPowerUp, Domain", 1),
     POWERUP_BOMB_RADIUS("Domain.Entities.PowerUps.BombRaduisPowerUpEntity, Domain", 1),
     POWERUP_BOMB_BAG("Domain.Entities.PowerUps.BombBagPowerUpEntity, Domain", 1),
-    OPEN("", 2);
+    OPEN("", 10);
 
     String domainString;
     private int cost;

@@ -241,7 +241,7 @@ public class Map implements TileBasedMap {
             if ((y-i > 0 && mapData[x][y-i] == MapEntity.WALL && mapData[x][y-1] != MapEntity.INDESTRUCTIBLE_WALL)
                     || (y+i < width && mapData[x][y+i] == MapEntity.WALL && mapData[x][y+1] != MapEntity.INDESTRUCTIBLE_WALL)
                     || (x-i > 0 && mapData[x-i][y] == MapEntity.WALL && mapData[x-1][y] != MapEntity.INDESTRUCTIBLE_WALL)
-                    || (y+i < height && mapData[x+i][y] == MapEntity.WALL && mapData[x+1][y] != MapEntity.INDESTRUCTIBLE_WALL)) {
+                    || (x+i < height && mapData[x+i][y] == MapEntity.WALL && mapData[x+1][y] != MapEntity.INDESTRUCTIBLE_WALL)) {
                 return true;
             }
         }
@@ -267,6 +267,22 @@ public class Map implements TileBasedMap {
                 return mapData[x+1][y];
         }
         return MapEntity.OPEN;
+    }
+
+    public Location botInRange(String botKey, int range) {
+        Location playerPosition = getPlayerPosition(botKey);
+        for (String key : players.keySet()) {
+            if (key.equals(botKey)) {
+                continue;
+            } else {
+                Location other = players.get(key);
+                if (Math.abs(other.getX()- playerPosition.getX()) <range
+                        && Math.abs(other.getY()-playerPosition.getY()) < range) {
+                    return other;
+                }
+            }
+        }
+        return null;
     }
 
     public int getWidthInTiles() {
@@ -317,19 +333,27 @@ public class Map implements TileBasedMap {
         return players.get(botKey);
     }
 
-    public Location findClosestPlayerTo(String botKey) {
+    public Location findClosestPlayerTo(String botKey, Bot bot, PathFinder finder) {
         Location current = players.get(botKey);
-        double minDistance = 1000;
+        //double minDistance = 1000;
         Location closestPlayer = null;
-        for (String bot : players.keySet()) {
-            if (bot.equals(botKey)) {
+        int minCost = Integer.MIN_VALUE;
+        for (String key : players.keySet()) {
+            if (key.equals(botKey)) {
                 continue;
             } else {
-                Location other = players.get(bot);
-                double distance = distance(current, other);
-                if (distance < minDistance) {
+                Location other = players.get(key);
+                Path path = finder.findPath(bot,
+                        current.getX() - 1, current.getY() - 1,
+                        other.getX() - 1, other.getY() - 1);
+                if (path.getCost() > minCost) {
+                    minCost = path.getCost();
                     closestPlayer = other;
                 }
+                //double distance = distance(current, other);
+                //if (distance < minDistance) {
+                //    closestPlayer = other;
+                //}
             }
         }
         return closestPlayer;
