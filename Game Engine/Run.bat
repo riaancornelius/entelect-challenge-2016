@@ -1,2 +1,2 @@
-Bomberman.exe --pretty -b "../" "../agro" "../Reference Bot" "../Reference Bot" 
+Bomberman.exe --pretty -b "../" "../bot-agro" "../bot-wallfinder" "../Reference Bot" 
 pause

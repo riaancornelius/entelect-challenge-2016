@@ -164,7 +164,7 @@ public class Map implements TileBasedMap {
         bombs.remove(bombs.size()-1);
         mapData = backupData;
 
-        return safeLocation.getLength() <= bomb.getBombTimer();
+        return safeLocation.getLength() <= bomb.getBombTimer()+1;
     }
 
     public boolean playerHasBomb(String botKey) {
@@ -214,6 +214,15 @@ public class Map implements TileBasedMap {
                 || mapData[x][y-1] == MapEntity.WALL);
     }
 
+    public boolean isPlayerNextToOpponent(String botKey) {
+        int x = getPlayerPosition(botKey).getX()-1;
+        int y = getPlayerPosition(botKey).getY()-1;
+        return (mapData[x+1][y] == MapEntity.PLAYER
+                || mapData[x-1][y] == MapEntity.PLAYER
+                || mapData[x][y+1] == MapEntity.PLAYER
+                || mapData[x][y-1] == MapEntity.PLAYER);
+    }
+
     public boolean isPowerUpInDirection(String botKey, Move direction) {
         int x = getPlayerPosition(botKey).getX()-1;
         int y = getPlayerPosition(botKey).getY()-1;
@@ -221,6 +230,29 @@ public class Map implements TileBasedMap {
         return entity == MapEntity.POWERUP_SUPER
                 || entity == MapEntity.POWERUP_BOMB_BAG
                 || entity == MapEntity.POWERUP_BOMB_RADIUS;
+    }
+
+    public boolean isWallInRange(String botKey) {
+        Location playerPosition = getPlayerPosition(botKey);
+        Integer range = playerData.get(botKey).getBombRadius();
+        int x = playerPosition.getX()-1;
+        int y = playerPosition.getY()-1;
+        for (Integer i = 0; i <= range; i++) {
+            if ((y-i > 0 && mapData[x][y-i] == MapEntity.WALL && mapData[x][y-1] != MapEntity.INDESTRUCTIBLE_WALL)
+                    || (y+i < width && mapData[x][y+i] == MapEntity.WALL && mapData[x][y+1] != MapEntity.INDESTRUCTIBLE_WALL)
+                    || (x-i > 0 && mapData[x-i][y] == MapEntity.WALL && mapData[x-1][y] != MapEntity.INDESTRUCTIBLE_WALL)
+                    || (y+i < height && mapData[x+i][y] == MapEntity.WALL && mapData[x+1][y] != MapEntity.INDESTRUCTIBLE_WALL)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isTargetInRange(String botKey, Path.Step target) {
+        Location playerPosition = getPlayerPosition(botKey);
+        Integer range = playerData.get(botKey).getBombRadius();
+        return ((playerPosition.getX()-1 == target.getX() && Math.abs((playerPosition.getY()-1)-target.getY()) <= range)
+                || (playerPosition.getY()-1 == target.getY() && Math.abs((playerPosition.getX()-1)-target.getX()) <= range));
     }
 
     public MapEntity getMapLocationInDirection(int x, int y, Move direction) {

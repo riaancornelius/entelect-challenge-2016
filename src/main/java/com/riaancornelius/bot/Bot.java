@@ -56,6 +56,7 @@ public class Bot implements Mover {
             path = map.findSafeLocation(playerPosition, this, finder);
         } else {
             path = findClosestWall(playerPosition, map, finder);
+            System.out.println("Closest wall found " + path.getLength() + " steps away");
             // Agro version goes after other bots:
             //Location nextTarget = map.findClosestPlayerTo(botKey);
             //path = finder.findPath(this, currentX, currentY, nextTarget.getX() - 1, nextTarget.getY() - 1);
@@ -82,14 +83,16 @@ public class Bot implements Mover {
                 System.out.println("Overriding with " + Move.RIGHT);
                 return Move.RIGHT;
             } else if (entityAtCurrent != MapEntity.EXPLOSION
-                    && (map.isPlayerNextToWall(botKey) || entityAtNextStep == MapEntity.PLAYER)
+                    && (map.isPlayerNextToWall(botKey) || map.isPlayerNextToOpponent(botKey)
+                        || map.isTargetInRange(botKey, path.getStep(path.getLength()-1))
+                        || map.isWallInRange(botKey))
                     && map.playerHasBomb(botKey) && map.canSafelyPlantBomb(botKey, playerPosition, this, finder)) {
                 System.out.println("Overriding with " + Move.PLANT);
                 return Move.PLANT;
             }
 
             Move move = Move.from(nextStep, map.getPlayerPosition(botKey));
-            System.out.println("Path with " + path.getLength() + " starts at " + nextStep);
+            System.out.println("Not overriding - Path with " + path.getLength() + " starts at " + nextStep);
             System.out.println("Moving: " + move.name());
             return move;
         }
